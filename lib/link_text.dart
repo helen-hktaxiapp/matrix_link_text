@@ -88,9 +88,9 @@ TextSpan LinkTextSpans(
     }
   };
 
-  textStyle ??= themeData?.textTheme?.bodyText2;
-  linkStyle ??= themeData?.textTheme?.bodyText2?.copyWith(
-    color: themeData?.accentColor,
+  textStyle ??= themeData?.textTheme.bodyText2;
+  linkStyle ??= themeData?.textTheme.bodyText2?.copyWith(
+    color: themeData.accentColor,
     decoration: TextDecoration.underline,
   );
 
