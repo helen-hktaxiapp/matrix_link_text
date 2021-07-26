@@ -14,7 +14,7 @@ import 'package:flutter/foundation.dart';
 import 'tlds.dart';
 import 'schemes.dart';
 
-typedef LinkTapHandler = void Function(String);
+typedef LinkTapHandler = void Function(String?);
 
 class LinkTextSpan extends TextSpan {
   // Beware!
@@ -29,14 +29,14 @@ class LinkTextSpan extends TextSpan {
   // Since TextSpan itself is @immutable, this means that you would have to
   // manage the recognizer from outside the TextSpan, e.g. in the State of a
   // stateful widget that then hands the recognizer to the TextSpan.
-  final String url;
+  final String? url;
 
   LinkTextSpan(
-      {TextStyle style,
+      {TextStyle? style,
       this.url,
-      String text,
-      LinkTapHandler onLinkTap,
-      List<InlineSpan> children})
+      String? text,
+      LinkTapHandler? onLinkTap,
+      List<InlineSpan>? children})
       : super(
           style: style,
           text: text,
@@ -69,19 +69,19 @@ final RegExp _estimateRegex = RegExp(r'\S[\.:]\S');
 
 // ignore: non_constant_identifier_names
 TextSpan LinkTextSpans(
-    {String text,
-    TextStyle textStyle,
-    TextStyle linkStyle,
-    LinkTapHandler onLinkTap,
-    ThemeData themeData}) {
+    {required String text,
+    TextStyle? textStyle,
+    TextStyle? linkStyle,
+    LinkTapHandler? onLinkTap,
+    ThemeData? themeData}) {
   assert(text != null);
-  final _launchUrl = (String url) async {
+  final _launchUrl = (String? url) async {
     if (onLinkTap != null) {
       onLinkTap(url);
       return;
     }
 
-    if (await canLaunch(url)) {
+    if (await canLaunch(url!)) {
       await launch(url);
     } else {
       throw 'Could not launch $url';
@@ -115,8 +115,8 @@ TextSpan LinkTextSpans(
     regexToUse = _fallbackRegex;
   }
 
-  List<RegExpMatch> links;
-  List<String> textParts;
+  List<RegExpMatch>? links;
+  List<String>? textParts;
   if (text.length > 300) {
     // we have a super long text, let's try to split it up
     links = [];
@@ -134,12 +134,12 @@ TextSpan LinkTextSpans(
       // we gotta make sure to save the text fragment between the current and the last chunk
       final firstFragment = text.substring(lastEnd, curStart);
       if (firstFragment.isNotEmpty) {
-        textParts.last += firstFragment;
+        textParts!.last += firstFragment;
       }
       // fetch our current fragment...
       final fragment = text.substring(curStart, curEnd);
       // add all the links
-      links.addAll(regexToUse.allMatches(fragment));
+      links!.addAll(regexToUse.allMatches(fragment));
 
       // and fetch the text parts
       final fragmentTextParts = fragment.split(regexToUse);
@@ -153,8 +153,8 @@ TextSpan LinkTextSpans(
         return;
       }
       // add all the text parts correctly
-      textParts.last += fragmentTextParts.removeAt(0);
-      textParts.addAll(fragmentTextParts);
+      textParts!.last += fragmentTextParts.removeAt(0);
+      textParts!.addAll(fragmentTextParts);
       // and save the lastEnd for later
       lastEnd = curEnd;
     };
@@ -185,12 +185,12 @@ TextSpan LinkTextSpans(
       // and we musn't forget to add the last fragment
       final lastFragment = text.substring(lastEnd, text.length);
       if (lastFragment.isNotEmpty) {
-        textParts.last += lastFragment;
+        textParts!.last += lastFragment;
       }
     }
   }
   links ??= regexToUse.allMatches(text).toList();
-  if (links.isEmpty) {
+  if (links!.isEmpty) {
     return TextSpan(
       text: text,
       style: textStyle,
@@ -202,11 +202,11 @@ TextSpan LinkTextSpans(
   final textSpans = <InlineSpan>[];
 
   int i = 0;
-  textParts.forEach((part) {
+  textParts!.forEach((part) {
     textSpans.add(TextSpan(text: part, style: textStyle));
 
-    if (i < links.length) {
-      final element = links[i];
+    if (i < links!.length) {
+      final element = links![i];
       final linkText = element.group(0);
       var link = linkText;
       final scheme = element.group(1);
@@ -215,17 +215,17 @@ TextSpan LinkTextSpans(
       var valid = true;
       if ((scheme ?? '').isNotEmpty) {
         // we have to validate the scheme
-        valid = ALL_SCHEMES.contains(scheme.toLowerCase());
+        valid = ALL_SCHEMES.contains(scheme!.toLowerCase());
       }
       if (valid && (tldUrl ?? '').isNotEmpty) {
         // we have to validate if the tld exists
-        valid = ALL_TLDS.contains(tldUrl.toLowerCase());
-        link = 'https://' + link;
+        valid = ALL_TLDS.contains(tldUrl!.toLowerCase());
+        link = 'https://' + link!;
       }
       if (valid && (tldEmail ?? '').isNotEmpty) {
         // we have to validate if the tld exists
-        valid = ALL_TLDS.contains(tldEmail.toLowerCase());
-        link = 'mailto:' + link;
+        valid = ALL_TLDS.contains(tldEmail!.toLowerCase());
+        link = 'mailto:' + link!;
       }
       if (valid) {
         if (kIsWeb) {
@@ -234,7 +234,7 @@ TextSpan LinkTextSpans(
             WidgetSpan(
               child: InkWell(
                 onTap: () => _launchUrl(link),
-                child: Text(linkText, style: linkStyle),
+                child: Text(linkText!, style: linkStyle),
               ),
             ),
           );
@@ -260,14 +260,14 @@ TextSpan LinkTextSpans(
 
 class LinkText extends StatelessWidget {
   final String text;
-  final TextStyle textStyle;
-  final TextStyle linkStyle;
+  final TextStyle? textStyle;
+  final TextStyle? linkStyle;
   final TextAlign textAlign;
-  final LinkTapHandler onLinkTap;
+  final LinkTapHandler? onLinkTap;
 
   const LinkText({
-    Key key,
-    @required this.text,
+    Key? key,
+    required this.text,
     this.textStyle,
     this.linkStyle,
     this.textAlign = TextAlign.start,
